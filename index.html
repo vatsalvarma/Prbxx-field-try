@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lithium AI - VaultVerse Dashboard</title>
+  <style>
+    /* CSS Variables */
+    :root {
+      --primary: #f56d20;
+      --yellow: #f4d068;
+      --bg-dark: #0a0a0c;
+      --text-main: #f0f0f0;
+      --text-muted: #a0a0a0;
+    }
+
+    /* Reset & Base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #000;
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Lenis Smooth Scroll */
+    html.lenis, html.lenis body { height: auto; }
+    .lenis.lenis-smooth { scroll-behavior: auto !important; }
+    .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+    .lenis.lenis-stopped { overflow: hidden; }
+    .lenis.lenis-smooth iframe { pointer-events: none; }
+
+    h1, h2, h3 { font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
+
+    /* =========================================
+       PAIN POINTS SECTION STYLES
+       ========================================= */
+    .pain-points-section {
+      position: relative; width: 100vw; height: 100vh; background: #0a0a0a;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px 20px; font-family: 'Inter', sans-serif; color: #fff; overflow: hidden;
+    }
+    .pp-header { text-align: center; margin-bottom: 30px; perspective: 1000px; }
+    .pp-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 10px; text-transform: none; letter-spacing: normal;}
+    .pp-title span { display: inline-block; transform-origin: 50% 50% -50px; }
+    .pp-subtitle { font-size: 1rem; color: #888; font-weight: 400; text-transform: none; letter-spacing: normal;}
+    
+    .pp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; width: 100%; perspective: 2000px; }
+    .pp-card {
+      background: #141414; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;
+      overflow: hidden; position: relative; height: 240px; display: flex; flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .pp-content { padding: 25px; position: relative; z-index: 2; max-width: 65%; }
+    .pp-content h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; text-transform: none; letter-spacing: normal;}
+    .pp-content p { font-size: 0.85rem; color: #888; line-height: 1.5; text-transform: none; font-weight: 400; letter-spacing: normal;}
+    
+    .pp-graphic { position: absolute; bottom: 0; left: 0; width: 100%; height: 160px; z-index: 1; pointer-events: none; }
+    .pp-graphic svg { stroke: rgba(255,255,255,0.3); }
+
+    /* Card 1 */
+    .pp-node { position: absolute; border-radius: 50%; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.05); display:flex; justify-content:center; align-items:center;}
+    .glow-node { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
+    .glow-node .node-inner { width: 8px; height: 8px; background: #eab308; border-radius: 50%; box-shadow: 0 0 10px #eab308; }
+    .main-node { background: rgba(255,255,255,0.03); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); }
+    .main-node svg { width: 30px; height: 30px; stroke: #fff; }
+
+    /* Card 2 */
+    .pp-card-2::before { content:''; position:absolute; top:-50px; left:-50px; width:150px; height:150px; background:radial-gradient(circle, rgba(234, 179, 8, 0.15) 0%, transparent 70%); z-index: 0; }
+    .pp-hex-wrapper { position: absolute; bottom: 10px; right: 30px; width: 120px; height: 130px; display: flex; justify-content: center; align-items: center; }
+    .pp-hex {
+       width: 100px; height: 110px; background: #1a1a1a; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+       display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.05); position: relative; z-index: 2;
+    }
+    .pp-hex span { font-size: 2rem; color: rgba(255,255,255,0.4); font-weight: bold; }
+    .pp-hex-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 130px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); background: rgba(255,255,255,0.02); z-index: 1;}
+
+    /* Card 3 */
+    .pp-key-grid { position: absolute; bottom: 15px; right: 30px; display: grid; grid-template-columns: repeat(3, 50px); gap: 10px; }
+    .pp-key { width: 50px; height: 50px; background: #1a1a1a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display:flex; justify-content:center; align-items:center; }
+    .glow-key { background: linear-gradient(135deg, #2a2a2a, #1a1a1a); box-shadow: 0 0 20px rgba(234, 179, 8, 0.2), inset 0 0 10px rgba(234, 179, 8, 0.1); border-color: rgba(234, 179, 8, 0.3); }
+    .glow-key svg { width: 20px; height: 20px; }
+
+    /* Card 4 */
+    .pp-app-row { position: absolute; bottom: 25px; right: 30px; display: flex; gap: 12px; }
+    .pp-app { width: 50px; height: 50px; background: #1a1a1a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display:flex; justify-content:center; align-items:center; }
+    .text-app { font-weight: 600; color: rgba(255,255,255,0.4); }
+    .glow-app { background: linear-gradient(to bottom, #2a2410, #1a1a1a); box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); border-color: rgba(234, 179, 8, 0.3); }
+    .glow-app svg { width: 24px; height: 24px; }
+    .pp-app svg { width: 20px; height: 20px; }
+
+    /* =========================================
+       METER SECTION STYLES
+       ========================================= */
+    .meter-section {
+      position: relative; width: 100vw; height: 100vh; background: #050505;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      overflow: hidden; font-family: 'Inter', sans-serif; color: #fff;
+    }
+
+    .side-cards-left { position: absolute; left: 60px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 40px; z-index: 10; }
+    .side-cards-right { position: absolute; right: 60px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 40px; z-index: 10; }
+    .side-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 24px;
+      width: 280px;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .side-card h4 { font-size: 1rem; margin-bottom: 8px; font-weight: 600; text-transform: none; letter-spacing: normal; transition: color 0.3s; }
+    .side-card p { font-size: 0.8rem; color: #888; line-height: 1.5; text-transform: none; font-weight: 400; letter-spacing: normal; }
+    .meter-container {
+      position: relative; width: 500px; height: 250px; margin-bottom: 50px;
+    }
+    .dial-svg {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    }
+    .dial-icon {
+      position: absolute; width: 28px; height: 28px; color: rgba(255,255,255,0.4);
+      transition: all 0.4s;
+    }
+
+    .dial-needle {
+      position: absolute; bottom: 0; left: 50%; width: 2px; height: 160px;
+      transform-origin: bottom center; transform: translateX(-50%) rotate(-70deg);
+      z-index: 10;
+    }
+    .needle-tick {
+      position: absolute; top: 0; left: -1.5px; width: 5px; height: 35px;
+      background: #2dd4bf; border-radius: 3px;
+      box-shadow: 0 0 15px #2dd4bf, 0 0 30px #2dd4bf;
+      transition: all 0.4s;
+    }
+
+    .active-status-box {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      padding: 6px 24px; border: 1px solid #2dd4bf; border-radius: 4px;
+      color: #2dd4bf; font-weight: 600; font-size: 0.85rem; letter-spacing: 1px;
+      background: rgba(45, 212, 191, 0.05);
+      box-shadow: inset 0 0 15px rgba(45, 212, 191, 0.2), 0 0 15px rgba(45, 212, 191, 0.2);
+      transition: all 0.9s; text-transform: none;
+    }
+
+    .risk-label {
+      font-size: 0.7rem; color: #666; letter-spacing: 3px; font-weight: 600;
+      margin-bottom: 25px;
+    }
+    .meter-title {
+      font-size: 3.5rem; font-weight: 600; margin-bottom: 20px; letter-spacing: -1px;
+      text-transform: none;
+    }
+    .meter-desc {
+      color: #a0a0a0; font-size: 1.1rem; max-width: 600px; text-align: center;
+      line-height: 1.6; font-weight: 400;
+    }
+
+    /* =========================================
+       ORBITAL TIMELINE STYLES
+       ========================================= */
+    .orbital-section {
+      position: relative; width: 100vw; height: 100vh; background: #000;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; font-family: 'Inter', sans-serif; color: #fff;
+    }
+    .orbital-container {
+      position: relative; width: 100%; max-width: 800px; height: 800px;
+      display: flex; align-items: center; justify-content: center; perspective: 1000px;
+    }
+    .orbit-center {
+      position: absolute; width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, #a855f7, #3b82f6, #14b8a6);
+      display: flex; justify-content: center; align-items: center; z-index: 10;
+    }
+    .core-pulse-1, .core-pulse-2 {
+      position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
+      animation: ping 2s cubic-bezier(0,0,0.2,1) infinite;
+    }
+    .core-pulse-1 { width: 80px; height: 80px; opacity: 0.7; }
+    .core-pulse-2 { width: 96px; height: 96px; opacity: 0.5; animation-delay: 0.5s; }
+    .core-solid {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);
+    }
+    @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+    .orbit-ring {
+      position: absolute; width: 400px; height: 400px;
+      border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    #nodes-container { position: absolute; width: 100%; height: 100%; top:0; left:0; pointer-events: none; }
+    .orbit-node-wrapper {
+      position: absolute; top: 50%; left: 50%;
+      transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto; cursor: pointer;
+    }
+    .node-energy-pulse {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%); transition: all 0.3s;
+    }
+    .node-energy-pulse.pulsing { animation: nodePulse 1s infinite alternate; }
+    @keyframes nodePulse { 0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } }
+
+    .node-icon-bg {
+      position: absolute; top: -20px; left: -20px; width: 40px; height: 40px; border-radius: 50%;
+      display: flex; justify-content: center; align-items: center; border: 2px solid rgba(255,255,255,0.4);
+      background: #000; color: #fff; transition: all 0.3s; font-size: 16px;
+    }
+    .node-icon-bg.expanded {
+      background: #fff; color: #000; border-color: #fff;
+      box-shadow: 0 0 15px rgba(255,255,255,0.3); transform: scale(1.5);
+    }
+    .node-icon-bg.related { background: rgba(255,255,255,0.5); color: #000; border-color: #fff; }
+
+    .node-title {
+      position: absolute; top: 28px; left: 50%; transform: translateX(-50%);
+      white-space: nowrap; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); transition: all 0.3s;
+    }
+    .orbit-node-wrapper.expanded .node-title { color: #fff; transform: translateX(-50%) scale(1.25); top: 35px; }
+
+    .node-card {
+      position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 256px;
+      background: rgba(0,0,0,0.9); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px;
+      padding: 16px; box-shadow: 0 10px 30px rgba(255,255,255,0.1); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 50; text-align: left;
+    }
+    .orbit-node-wrapper.expanded .node-card { opacity: 1; pointer-events: auto; }
+    .node-card::before { content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 1px; height: 12px; background: rgba(255,255,255,0.5); }
+    
+    .nc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .nc-badge { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(255,255,255,0.5); }
+    .nc-badge.completed { background: #000; color: #fff; border-color: #fff; }
+    .nc-badge.in-progress { background: #fff; color: #000; border-color: #000; }
+    .nc-badge.pending { background: rgba(0,0,0,0.4); color: #fff; }
+    .nc-date { font-size: 10px; font-family: monospace; color: rgba(255,255,255,0.5); }
+    .nc-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;}
+    .nc-desc { font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 16px; line-height: 1.4; text-transform: none; font-weight: normal; letter-spacing: normal;}
+    
+    .nc-energy { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-bottom: 16px; }
+    .nce-top { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px; font-weight: normal; letter-spacing: normal; text-transform: none;}
+    .nce-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    .nce-fill { height: 100%; background: linear-gradient(to right, #3b82f6, #a855f7); }
+    
+    .nc-related { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; }
+    .ncr-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.7); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; font-weight: normal;}
+    .ncr-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .ncr-tag {
+      background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
+      color: rgba(255,255,255,0.8); font-size: 10px; padding: 4px 8px; cursor: pointer;
+      display: flex; align-items: center; gap: 4px; transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .ncr-tag:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* Layout */
+    .scroll-container { width: 100%; }
+    
+    .pin-section {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: url("https://plus.unsplash.com/premium_photo-1764695657459-a346a3da6127?q=80&w=1332&auto=format&fit=crop") center/cover;
+    }
+    .pin-section::after {
+      content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.7); z-index: 0; pointer-events: none;
+    }
+
+    /* 3D Scene */
+    .scene {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      perspective: 2000px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    /* Cards */
+    .card-item {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10vw;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+      gap: 5vw;
+    }
+
+    .card-item.reverse { flex-direction: row-reverse; }
+
+    .card-img-wrapper {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: float-slow 8s ease-in-out infinite;
+    }
+
+    .card-img-wrapper img {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      object-fit: contain;
+      mix-blend-mode: screen;
+      filter: drop-shadow(0 0 40px rgba(245, 109, 32, 0.15));
+    }
+
+    .card-content {
+      flex: 1; text-align: left; padding: 30px; max-width: 600px;
+    }
+    .card-item.reverse .card-content { text-align: right; }
+
+    .label-small {
+      font-size: 0.85rem; color: var(--primary); letter-spacing: 5px;
+      margin-bottom: 20px; position: relative; display: inline-block; font-weight: 700;
+    }
+    
+    .card-item:not(.reverse) .label-small::after {
+      content: ''; position: absolute; right: -60px; top: 50%; width: 50px; height: 1px; background: var(--primary);
+    }
+    .card-item.reverse .label-small::before {
+      content: ''; position: absolute; left: -60px; top: 50%; width: 50px; height: 1px; background: var(--primary);
+    }
+
+    .card-content h2 {
+      font-size: 3.5rem; margin-bottom: 20px;
+      background: linear-gradient(to right, #fff, #aaa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1.1; text-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+    .card-content p { font-size: 1.1rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* =========================================
+       FINAL SECTION: GLASSMORPHIC DASHBOARD
+       ========================================= */
+    .final-section {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-dark);
+      z-index: 10; opacity: 0; pointer-events: none;
+      display: flex; flex-direction: row; overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+    .final-section.active { pointer-events: auto; }
+
+    /* Glass & Utilities */
+    .glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+    }
+
+    /* Sidebar */
+    .dash-sidebar {
+      width: 80px; height: 100%; border-right: 1px solid rgba(255,255,255,0.05);
+      display: flex; flex-direction: column; align-items: center; padding: 30px 0;
+    }
+    .logo-dots { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 50px; }
+    .logo-dots .dot { width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; }
+    .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+    .n-item { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: #a0a0a0; font-size: 0.8rem;}
+    .n-item.active { background: var(--yellow); color: #000; box-shadow: 0 0 15px rgba(244,208,104,0.5); }
+    .nav-bottom .n-item { margin-top: auto; }
+
+    /* Main Area */
+    .dash-main { flex: 1; display: flex; flex-direction: column; padding: 30px 40px; overflow: hidden; }
+
+    /* Header */
+    .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; height: 50px; }
+    .dh-left, .dh-right { display: flex; align-items: center; gap: 20px; }
+    .gold-text { color: var(--yellow); font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;}
+    .toggle-bg { background: rgba(255,255,255,0.05); border-radius: 30px; padding: 4px; display: flex; align-items: center; }
+    .toggle-btn { padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; color: #a0a0a0; cursor: pointer; }
+    .toggle-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
+    .dh-center { font-weight: 600; letter-spacing: 2px; color: #fff; font-size: 1rem; }
+    .search-box { background: rgba(255,255,255,0.05); border-radius: 30px; padding: 8px 15px; display: flex; align-items: center; gap: 10px; }
+    .search-box input { background: transparent; border: none; color: #fff; outline: none; width: 120px; font-size: 0.85rem;}
+    .icon-circle { width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; justify-content: center; align-items: center; font-size: 0.85rem;}
+    .icon-circle.yellow { background: var(--yellow); color: #000; }
+    .user-greeting { display: flex; align-items: center; gap: 15px; font-size: 0.9rem; }
+    .user-greeting img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover;}
+
+    /* Dashboard Grid Layout */
+    .dash-content { flex: 1; display: grid; grid-template-columns: 320px 1fr 340px; gap: 30px; height: calc(100% - 80px); }
+
+    /* Left Column */
+    .dash-col-left { display: flex; flex-direction: column; gap: 25px; }
+    .sec-title { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; text-transform: none; letter-spacing: normal;}
+    .huge-val { font-size: 3rem; font-weight: 400; line-height: 1; margin-bottom: 15px; font-family: monospace;}
+    .decimals { font-size: 1.2rem; color: #a0a0a0; }
+    .pill-row { display: flex; gap: 15px; align-items: center; font-size: 0.8rem; }
+    .badge { border: 1px solid rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; }
+    .green-text { color: #4ade80; }
+
+    .stats-box { display: flex; flex-direction: column; gap: 8px; }
+    .stat-line { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; font-family: monospace;}
+    .stat-line.active { background: linear-gradient(90deg, rgba(244,208,104,0.15) 0%, transparent 100%); }
+    .s-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.7rem; }
+    .yellow-bg { background: var(--yellow); color: #000; }
+    .dark-bg { background: rgba(255,255,255,0.1); }
+    .s-label { color: #a0a0a0; font-weight: 400; margin-left: auto; font-size: 0.8rem; font-family: 'Inter', sans-serif;}
+
+    .markets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .m-card { padding: 15px; display: flex; flex-direction: column; justify-content: space-between; height: 110px; border-radius: 15px;}
+    .mc-top { display: flex; justify-content: space-between; font-size: 0.65rem; color: #a0a0a0; align-items: center;}
+    .mc-top .coin { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 8px; color: #fff; }
+    .mc-mid { font-size: 1rem; font-weight: 600; margin: 10px 0; display: flex; align-items: center; gap: 8px; font-family: monospace;}
+    .mc-mid .logo { font-size: 1rem; }
+    .mc-bot { display: flex; align-items: center; gap: 10px; }
+    .progress-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    .progress-bar .fill { height: 100%; border-radius: 2px; }
+    .fill.yellow { background: var(--yellow); }
+    .fill.pink { background: #ec4899; }
+    .small-val { font-size: 0.7rem; color: #a0a0a0; font-family: monospace;}
+
+    .chart-card { grid-column: span 2; height: 140px; }
+    .bar-chart { flex: 1; display: flex; align-items: flex-end; gap: 6px; margin-top: 10px; }
+    .bar { flex: 1; background: rgba(255,255,255,0.1); border-radius: 4px; transition: height 1s ease; }
+    .bar.yellow { background: var(--yellow); box-shadow: 0 0 10px rgba(244,208,104,0.3); }
+    .chart-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.6rem; color: #a0a0a0; }
+
+    /* Center Column (Asteroid) */
+    .dash-col-center { position: relative; display: flex; justify-content: center; align-items: center; top: -12%;}
+    .glass-sphere-container { width: 450px; height: 450px; position: relative; }
+    .glass-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
+      box-shadow: inset 0 0 40px rgba(255,255,255,0.05), 0 0 80px rgba(244,208,104,0.05);
+      backdrop-filter: blur(1px); z-index: 2; border: 1px solid rgba(255,255,255,0.05);
+    }
+    .core-rock {
+      position: absolute; top: 15%; left: 15%; width: 70%; height: 70%;
+      background: url('https://media.istockphoto.com/id/1182965730/photo/abstract-plexus-sphere-surface.jpg?s=2048x2048&w=is&k=20&c=PtJA31su-DBkEb1Nti714urcdEjD2D1rKCVrDvDO4_s=') center/cover;
+      border-radius: 50%; filter: brightness(0.5) contrast(1.3); z-index: 1;
+      box-shadow: 0 0 80px rgba(244,208,104,0.2);
+      animation: rotate-slow 100s linear infinite;
+    }
+    .particles { position: absolute; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+    .p-dot {
+      position: absolute; width: 5px; height: 5px; background: var(--yellow); border-radius: 50%;
+      box-shadow: 0 0 10px 3px rgba(244,208,104,0.8);
+      animation: pulse-glow 2s infinite alternate;
+    }
+    @keyframes pulse-glow { 0% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
+    @keyframes rotate-slow { 100% { transform: rotate(360deg); } }
+
+    /* Right Column */
+    .dash-col-right { display: flex; flex-direction: column; gap: 25px; }
+    .right-top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 140px; }
+    .img-card { position: relative; overflow: hidden; padding: 0; border-radius: 15px;}
+    .img-card img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) contrast(1.2); }
+    .overlay-tags { position: absolute; bottom: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; }
+    .overlay-tags .tag { background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); padding: 3px 8px; border-radius: 15px; font-size: 0.65rem; border: 1px solid rgba(255,255,255,0.2); }
+    
+    .ring-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; border-radius: 15px;}
+    .rc-title { font-size: 0.7rem; color: #a0a0a0; margin-bottom: 10px; }
+    .circle-ring {
+      width: 70px; height: 70px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--yellow); border-right-color: var(--yellow);
+      display: flex; align-items: center; justify-content: center; transform: rotate(-45deg);
+    }
+    .ring-val { transform: rotate(45deg); font-size: 1.1rem; font-weight: 600; font-family: monospace;}
+
+    .activity-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px;}
+    .ah-title { font-size: 1.2rem; line-height: 1.2; font-weight: 400; text-transform: none; letter-spacing: normal;}
+    .ah-actions { display: flex; gap: 8px; }
+    .act-tags { display: flex; gap: 8px; }
+    .act-tags .tag { border: 1px solid rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px; font-size: 0.7rem; }
+
+    .stack-container { display: flex; gap: 15px; height: 220px; bottom: -410%; }
+    .side-pill {
+      width: 45px; background: rgba(255,255,255,0.03); border-radius: 25px; 
+      display: flex; flex-direction: column; align-items: center; padding: 15px 0; gap: 15px;
+      border: 1px solid rgba(255,255,255,0.05);
+      bottom: -410%;
+    }
+    .sp-icon { width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; border-radius: 50%; background: rgba(255,255,255,0.1); font-size: 0.7rem; }
+    .sp-icon.outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); }
+
+    .stacked-cards { flex: 1; position: relative; }
+    .yellow-folder {
+      position: absolute; top: -0%; left: 0; width: 100%; height: 120px;
+      background: var(--yellow); color: #000; border-radius: 20px 20px 20px 0;
+      padding: 15px; display: flex; justify-content: space-between; z-index: 2;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .yf-left { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.85rem;}
+    .yf-left img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #000; object-fit: cover;}
+    .yf-date { text-align: right; font-weight: 800; font-size: 0.75rem; line-height: 1.2; }
+
+    .dark-folder {
+      position: absolute; bottom: -30%; left: 0; width: 100%; height: 150px;
+      border-radius: 0 20px 20px 20px; padding: 15px;
+      display: flex; flex-direction: column; justify-content: space-between; z-index: 1;
+    }
+    .df-top { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: #a0a0a0; }
+    .df-top img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover;}
+    .df-mid { font-size: 1.8rem; font-weight: 400; margin: 5px 0; font-family: monospace; color: #fff;}
+    .df-bot { display: flex; gap: 10px; font-size: 0.7rem; }
+    .bot-tag { padding: 4px 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; }
+    .bot-tag.active { background: #fff; color: #000; }
+    .df-date { position: absolute; top: 40px; right: 15px; text-align: right; font-weight: 800; font-size: 0.75rem; line-height: 1.2; color: #a0a0a0;}
+    .df-arrow { position: absolute; bottom: 15px; right: 15px; width: 24px; height: 24px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.7rem; color: #a0a0a0;}
+
+    /* Floating Animations */
+    @keyframes float-slow {
+      0%, 100% { transform: translateY(-5%) rotateX(0deg) rotateY(0deg); }
+      50% { transform: translateY(0%) rotateX(-2deg) rotateY(2deg); }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="scroll-container">
+    <div class="pin-section">
+      
+      <div class="scene">
+        
+        <!-- Card 1: Image Left, Data Right -->
+        <div class="card-item" id="card-1">
+          <div class="card-img-wrapper">
+            <img src="card1.png" alt="UI Card">
+          </div>
+          <div class="card-content">
+            <div class="label-small">ADVANTAGES</div>
+            <h2>Elevating Your Experience</h2>
+            <p>Discover The Unparalleled Benefits That Differentiate Us From The Competition And Enhance Your Journey With Us.</p>
+          </div>
+        </div>
+
+        <!-- Card 2: Image Right, Data Left -->
+        <div class="card-item reverse" id="card-2">
+          <div class="card-img-wrapper">
+            <img src="card2.png" alt="UI Card">
+          </div>
+          <div class="card-content">
+            <div class="label-small">FULLY AI</div>
+            <h2>Automate Your Digital Strategy</h2>
+            <p>Discover The Unparalleled Benefits That Differentiate Us From The Competition And Enhance Your Journey With Us.</p>
+          </div>
+        </div>
+
+        <!-- Card 3: Image Left, Data Right -->
+        <div class="card-item" id="card-3">
+          <div class="card-img-wrapper">
+            <img src="card3.png" alt="UI Card">
+          </div>
+          <div class="card-content">
+            <div class="label-small">SECURED</div>
+            <h2>Security You Can Rely On</h2>
+            <p>Discover The Unparalleled Benefits That Differentiate Us From The Competition And Enhance Your Journey With Us.</p>
+          </div>
+        </div>
+
+        <!-- Card 4: Image Right, Data Left -->
+        <div class="card-item reverse" id="card-4">
+          <div class="card-img-wrapper">
+            <img src="card4.png" alt="UI Card">
+          </div>
+          <div class="card-content">
+            <div class="label-small">INTEGRATED</div>
+            <h2>Seamless Connectivity</h2>
+            <p>Discover The Unparalleled Benefits That Differentiate Us From The Competition And Enhance Your Journey With Us.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FINAL SECTION: VAULTVERSE DASHBOARD -->
+      <div class="final-section">
+        
+        <!-- Sidebar -->
+        <div class="dash-sidebar dash-anim">
+           <div class="logo-dots">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+           </div>
+           <div class="nav-menu">
+              <div class="n-item active">⬡</div>
+              <div class="n-item">🖥</div>
+              <div class="n-item">⌂</div>
+              <div class="n-item">⚯</div>
+           </div>
+           <div class="nav-bottom">
+              <div class="n-item">⎋</div>
+           </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dash-main">
+           <!-- Header -->
+           <div class="dash-header dash-anim">
+              <div class="dh-left">
+                 <div class="gold-text">✦ WETH/USDC</div>
+                 <div class="toggle-bg">
+                    <div class="toggle-btn active">Portfolio</div>
+                    <div class="toggle-btn">Trade</div>
+                 </div>
+              </div>
+              <div class="dh-center">VaultVerse v.1.0</div>
+              <div class="dh-right">
+                 <div class="search-box">
+                    <span class="s-icon">⚲</span> <input type="text" placeholder="searching...">
+                 </div>
+                 <div class="icon-circle">✉</div>
+                 <div class="icon-circle">⍾</div>
+                 <div class="icon-circle yellow">⚙</div>
+                 <div class="user-greeting">Hello Maurice <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop" alt="User"></div>
+              </div>
+           </div>
+
+           <!-- Content Grid -->
+           <div class="dash-content">
+              
+              <!-- Left Column -->
+              <div class="dash-col-left">
+                 <div class="dash-anim-stagger-1">
+                   <div class="sec-title">Performance ⓘ</div>
+                   <div class="huge-val">12,789<span class="decimals">.00 $</span></div>
+                   <div class="pill-row">
+                      <span class="badge">Past Week</span>
+                      <span class="green-text">⭡ 0.024567%</span>
+                   </div>
+                 </div>
+
+                 <div class="stats-box dash-anim-stagger-1">
+                    <div class="stat-line active">
+                       <div class="s-icon yellow-bg">✦</div>
+                       <div class="s-val">$ 15.000</div>
+                       <div class="s-label">Balance</div>
+                    </div>
+                    <div class="stat-line">
+                       <div class="s-icon dark-bg">A</div>
+                       <div class="s-val">$ 7.300</div>
+                       <div class="s-label">Leverage</div>
+                    </div>
+                    <div class="stat-line">
+                       <div class="s-icon dark-bg">⏱</div>
+                       <div class="s-val">$ 211.200</div>
+                       <div class="s-label">Margin Usage</div>
+                    </div>
+                 </div>
+
+                 <div class="sec-title dash-anim-stagger-1">Explore markets</div>
+                 
+                 <div class="markets-grid dash-anim-stagger-1">
+                    <div class="m-card glass m-card-anim">
+                       <div class="mc-top">
+                          <span class="coin">Origin</span> <span class="ticker">SNX</span> <span class="green-text">0.0267%</span>
+                       </div>
+                       <div class="mc-mid">
+                          <span class="logo">𝕏</span> USD 30,150.10
+                       </div>
+                       <div class="mc-bot">
+                          <div class="progress-bar"><div class="fill yellow" style="width: 70%"></div></div> <span class="small-val">$ 1.00</span>
+                       </div>
+                    </div>
+                    
+                    <div class="m-card glass m-card-anim">
+                       <div class="mc-top">
+                          <span class="coin">Tether</span> <span class="ticker">XRP</span> <span class="green-text">0.4567%</span>
+                       </div>
+                       <div class="mc-mid">
+                          <span class="logo">𝕏</span> USD 13,150.10
+                       </div>
+                       <div class="mc-bot">
+                          <div class="progress-bar"><div class="fill yellow" style="width: 40%"></div></div> <span class="small-val">$ 1.00</span>
+                       </div>
+                    </div>
+
+                    <div class="m-card glass m-card-anim">
+                       <div class="mc-top">
+                          <span class="coin">Ethereum</span> <span class="ticker">ETH</span> <span class="green-text">0.1567%</span>
+                       </div>
+                       <div class="mc-mid">
+                          <span class="logo">⬨</span> USD 80,001.10
+                       </div>
+                       <div class="mc-bot">
+                          <div class="progress-bar"><div class="fill pink" style="width: 30%"></div></div> <span class="small-val">$ 1.00</span>
+                       </div>
+                    </div>
+
+                    <div class="m-card glass chart-card m-card-anim">
+                       <div class="mc-top">At a Glance <span style="margin-left:auto">⋮</span></div>
+                       <div class="bar-chart">
+                          <div class="bar" style="height: 30%"></div>
+                          <div class="bar" style="height: 50%"></div>
+                          <div class="bar" style="height: 80%"></div>
+                          <div class="bar yellow" style="height: 100%"></div>
+                          <div class="bar" style="height: 60%"></div>
+                          <div class="bar" style="height: 40%"></div>
+                       </div>
+                       <div class="chart-labels"><span>0.1</span><span>0.2</span><span>0.3</span><span>0.4</span><span>0.5</span></div>
+                    </div>
+                 </div>
+              </div>
+
+              <!-- Center Column -->
+              <div class="dash-col-center dash-anim-zoom">
+                 <div class="glass-sphere-container">
+                    <div class="core-rock"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="particles" id="particles-container">
+                       <!-- JS will inject particles here -->
+                    </div>
+                 </div>
+              </div>
+
+              <!-- Right Column -->
+              <div class="dash-col-right">
+                 <div class="right-top-grid dash-anim-stagger-2">
+                    <div class="img-card glass rt-anim">
+                       <img src="https://media.istockphoto.com/id/1182965730/photo/abstract-plexus-sphere-surface.jpg?s=2048x2048&w=is&k=20&c=PtJA31su-DBkEb1Nti714urcdEjD2D1rKCVrDvDO4_s=" alt="Abstract">
+                       <div class="overlay-tags"><span class="tag">NFT ✕</span> <span class="tag yellow-text">Portfolio ⭧</span></div>
+                    </div>
+                    <div class="ring-card glass rt-anim">
+                       <div class="rc-title">WETH/USDC</div>
+                       <div class="circle-ring">
+                          <div class="ring-val">60%</div>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div class="activity-header dash-anim-stagger-2">
+                    <div class="ah-title">Activity<br>value over time</div>
+                    <div class="ah-actions">
+                       <span class="icon-circle">↓</span> <span class="icon-circle">⚙</span>
+                    </div>
+                 </div>
+                 <div class="act-tags dash-anim-stagger-2">
+                    <span class="tag">Investors</span> <span class="tag">Trading</span>
+                 </div>
+
+                 <div class="stack-container dash-anim-stagger-2">
+                    <div class="side-pill">
+                       <div class="sp-icon">🎥</div>
+                       <div class="sp-icon outline">+</div>
+                       <div class="sp-icon">🎙</div>
+                       <div class="sp-icon outline">+</div>
+                    </div>
+                    
+                    <div class="stacked-cards">
+                       <div class="yellow-folder stack-anim">
+                          <div class="yf-left">
+                             <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop" alt="Avatar">
+                             <span class="yf-text">Video Call to Jessica Jesper</span>
+                          </div>
+                          <div class="yf-date">02<br>FEB</div>
+                       </div>
+                       
+                       <div class="dark-folder glass stack-anim">
+                          <div class="df-top">
+                             <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=100&auto=format&fit=crop" alt="Avatar">
+                             <span class="df-text">Send payment reminder</span>
+                          </div>
+                          <div class="df-mid">$5,789</div>
+                          <div class="df-bot">
+                             <span class="bot-tag active">Details</span>
+                             <span class="bot-tag">Docs</span>
+                             <span class="bot-tag">Notes</span>
+                          </div>
+                          <div class="df-date">05<br>FEB</div>
+                          <div class="df-arrow">⭧</div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+           </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  </div> <!-- End of scroll-container -->
+
+  <!-- =========================================
+       PAIN POINTS SECTION
+       ========================================= -->
+  <div class="pain-points-section" id="pain-points-section">
+    <div class="pp-header">
+      <h2 class="pp-title">We Recognize Your Pain Points</h2>
+      <p class="pp-subtitle">Some subheading goes here</p>
+    </div>
+    
+    <div class="pp-grid">
+      <!-- Card 1 -->
+      <div class="pp-card pp-card-1">
+        <div class="pp-content">
+          <h3>Recruitment Challenges</h3>
+          <p>Securing and onboarding a skilled professional can take upwards of two months, with additional time required for them to adapt to company workflows.</p>
+        </div>
+        <div class="pp-graphic">
+           <div class="pp-node glow-node" style="top: 20%; right: 25%; width: 30px; height: 30px;"><div class="node-inner"></div></div>
+           <div class="pp-node" style="top: 40%; right: 35%; width: 40px; height: 40px;"></div>
+           <div class="pp-node main-node" style="top: 30%; right: 10%; width: 70px; height: 70px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+           </div>
+           <div class="pp-node" style="top: 15%; right: 5%; width: 40px; height: 40px;"></div>
+           <div class="pp-node" style="top: 60%; right: 15%; width: 50px; height: 50px;"></div>
+        </div>
+      </div>
+      
+      <!-- Card 2 -->
+      <div class="pp-card pp-card-2">
+        <div class="pp-content">
+          <h3>Employment Expenses</h3>
+          <p>Employing staff involves fixed costs such as salaries, payroll taxes, insurance, office space, and benefits, which can significantly add to operational costs.</p>
+        </div>
+        <div class="pp-graphic">
+          <div class="pp-hex-wrapper">
+            <div class="pp-hex-glow"></div>
+            <div class="pp-hex">
+               <span>$</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Card 3 -->
+      <div class="pp-card pp-card-3">
+        <div class="pp-content">
+          <h3>Leadership Struggles</h3>
+          <p>Founders and managers often face difficulties managing creative talent effectively, leading to reduced productivity within the team.</p>
+        </div>
+        <div class="pp-graphic">
+          <div class="pp-key-grid">
+             <div class="pp-key"></div><div class="pp-key"></div><div class="pp-key"></div><div class="pp-key"></div>
+             <div class="pp-key glow-key">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+             </div>
+             <div class="pp-key"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Card 4 -->
+      <div class="pp-card pp-card-4">
+        <div class="pp-content">
+          <h3>Limited Expertise</h3>
+          <p>Depending on a single multi-skilled designer can limit project quality and lack the specialization needed for diverse tasks.</p>
+        </div>
+        <div class="pp-graphic">
+          <div class="pp-app-row">
+             <div class="pp-app"></div>
+             <div class="pp-app text-app">Ps</div>
+             <div class="pp-app glow-app">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+             </div>
+             <div class="pp-app"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+             <div class="pp-app"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================
+       METER SECTION
+       ========================================= -->
+  <div class="meter-section" id="meter-section">
+    <div class="side-cards-left">
+      <div class="side-card" id="sc-0"><h4 id="sc-title-0"></h4><p id="sc-desc-0"></p></div>
+      <div class="side-card" id="sc-1"><h4 id="sc-title-1"></h4><p id="sc-desc-1"></p></div>
+    </div>
+
+    <div class="meter-container">
+      
+      <!-- Arch SVG -->
+      <svg width="500" height="250" viewBox="0 0 500 250" class="dial-svg">
+        <defs>
+          <filter id="glow-teal" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+          <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+          <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        
+        <circle cx="250" cy="250" r="140" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="2" stroke-dasharray="4 8"/>
+        <circle cx="250" cy="250" r="120" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="10" stroke-dasharray="50 10"/>
+        
+        <g transform="rotate(180 250 250)">
+          <circle id="dial-seg-0" class="dial-seg" cx="250" cy="250" r="200" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="60" stroke-dasharray="200 1000" stroke-dashoffset="0" style="transition: all 0.4s;"/>
+          <circle id="dial-seg-1" class="dial-seg" cx="250" cy="250" r="200" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="60" stroke-dasharray="200 1000" stroke-dashoffset="-214" style="transition: all 0.4s;"/>
+          <circle id="dial-seg-2" class="dial-seg" cx="250" cy="250" r="200" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="60" stroke-dasharray="200 1000" stroke-dashoffset="-428" style="transition: all 0.4s;"/>
+        </g>
+      </svg>
+
+      <!-- Icons -->
+      <!-- Left -->
+      <div class="dial-icon" style="bottom: 110px; left: 45px;" id="icon-0">
+         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"></path></svg>
+      </div>
+      <!-- Center -->
+      <div class="dial-icon" style="bottom: 200px; left: 236px;" id="icon-1">
+         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="10" stroke-dasharray="4 4"/></svg>
+      </div>
+      <!-- Right -->
+      <div class="dial-icon" style="bottom: 110px; right: 45px;" id="icon-2">
+         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="10" height="10"/><rect x="11" y="11" width="10" height="10"/></svg>
+      </div>
+
+      <!-- Needle -->
+      <div class="dial-needle" id="dial-needle">
+         <div class="needle-tick" id="needle-tick"></div>
+      </div>
+
+      <!-- Center Glow Info -->
+      <div class="active-status-box" id="active-status-box">Conservative</div>
+      
+    </div>
+
+    <div class="risk-label">[ TAILORED RISK MANAGEMENT ]</div>
+    
+    <h2 class="meter-title" id="meter-title-text">Multi-tiered risk strategies.</h2>
+    <p class="meter-desc" id="meter-desc-text">Full control, zero guesswork. Choose from Conservative, Balanced, or Dynamic trading styles, adjusting risk tolerance to your preference.</p>
+
+    <div class="side-cards-right">
+      <div class="side-card" id="sc-2"><h4 id="sc-title-2"></h4><p id="sc-desc-2"></p></div>
+      <div class="side-card" id="sc-3"><h4 id="sc-title-3"></h4><p id="sc-desc-3"></p></div>
+    </div>
+
+  </div> <!-- End of meter-section -->
+  <!-- ORBITAL TIMELINE SECTION -->
+  <div class="orbital-section" id="orbital-section">
+    <div class="side-cards-left" style="z-index: 10;">
+      <div class="side-card" id="osc-0"><h4 id="osc-title-0"></h4><p id="osc-desc-0"></p></div>
+      <div class="side-card" id="osc-1"><h4 id="osc-title-1"></h4><p id="osc-desc-1"></p></div>
+    </div>
+
+    <div class="orbital-container" id="orbital-container">
+      
+      <!-- Center Core -->
+      <div class="orbit-center">
+         <div class="core-pulse-1"></div>
+         <div class="core-pulse-2"></div>
+         <div class="core-solid"></div>
+      </div>
+      
+      <!-- Orbital Ring -->
+      <div class="orbit-ring"></div>
+
+      <!-- Nodes will be injected here via JS -->
+      <div id="nodes-container"></div>
+      
+    </div>
+
+    <div class="side-cards-right" style="z-index: 10;">
+      <div class="side-card" id="osc-2"><h4 id="osc-title-2"></h4><p id="osc-desc-2"></p></div>
+      <div class="side-card" id="osc-3"><h4 id="osc-title-3"></h4><p id="osc-desc-3"></p></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <script>
+    // Generate particles
+    const pContainer = document.getElementById('particles-container');
+    if(pContainer) {
+      for(let i=0; i<40; i++) {
+         const dot = document.createElement('div');
+         dot.className = 'p-dot';
+         dot.style.top = (15 + Math.random() * 70) + '%';
+         dot.style.left = (15 + Math.random() * 70) + '%';
+         dot.style.animationDelay = (Math.random() * 2) + 's';
+         pContainer.appendChild(dot);
+      }
+    }
+
+    // Initialize Lenis for buttery smooth scrolling
+    const lenis = new Lenis({
+      duration: 1.5,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+      direction: 'vertical',
+      gestureDirection: 'vertical',
+      smoothTouch: false,
+      touchMultiplier: 2,
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    gsap.ticker.add((time)=>{
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const cards = [
+      document.getElementById('card-1'),
+      document.getElementById('card-2'),
+      document.getElementById('card-3'),
+      document.getElementById('card-4')
+    ];
+
+    cards.forEach((card, i) => {
+      gsap.set(card, {
+        z: i * -4000,
+        opacity: i === 0 ? 1 : 0
+      });
+    });
+
+    // Main scroll timeline
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".scroll-container",
+        start: "top top",
+        end: "+=12000",
+        scrub: 1,
+        pin: true,
+      }
+    });
+
+    tl.to(cards, {
+      z: "+=16000",
+      ease: "none",
+      duration: 4
+    }, 0);
+
+    // Card 1 Text Intro (Independent of scroll)
+    gsap.from("#card-1 .label-small, #card-1 h2, #card-1 p", {
+      y: 40, opacity: 0, duration: 1.2, stagger: 0.2, ease: "power3.out", delay: 0.5
+    });
+
+    // Fade Animations
+    // Card 1
+    tl.to(cards[0], { opacity: 0, duration: 0.25, ease: "power1.in" }, 0.25);
+
+    // Card 2
+    tl.to(cards[1], { opacity: 1, duration: 0.6, ease: "power1.out" }, 0.2);
+    tl.from(cards[1].querySelectorAll(".label-small, h2, p"), { y: 60, opacity: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }, 0.2);
+    tl.to(cards[1], { opacity: 0, duration: 0.25, ease: "power1.in" }, 1.25);
+
+    // Card 3
+    tl.to(cards[2], { opacity: 1, duration: 0.6, ease: "power1.out" }, 1.2);
+    tl.from(cards[2].querySelectorAll(".label-small, h2, p"), { y: 60, opacity: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }, 1.2);
+    tl.to(cards[2], { opacity: 0, duration: 0.25, ease: "power1.in" }, 2.25);
+
+    // Card 4
+    tl.to(cards[3], { opacity: 1, duration: 0.6, ease: "power1.out" }, 2.2);
+    tl.from(cards[3].querySelectorAll(".label-small, h2, p"), { y: 60, opacity: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }, 2.2);
+    tl.to(cards[3], { opacity: 0, duration: 0.25, ease: "power1.in" }, 3.25);
+
+    // ==========================================
+    // FINAL SECTION DASHBOARD REVEAL ANIMATIONS
+    // ==========================================
+    tl.to(".final-section", { 
+      opacity: 1, 
+      duration: 0.6, 
+      ease: "power2.inOut",
+      onStart: () => document.querySelector('.final-section').classList.add('active'),
+      onReverseComplete: () => document.querySelector('.final-section').classList.remove('active')
+    }, 3.0);
+
+    // Sidebar & Header slide in
+    tl.from(".dash-sidebar", { x: -100, opacity: 0, duration: 0.5, ease: "power3.out" }, 3.1);
+    tl.from(".dash-header", { y: -50, opacity: 0, duration: 0.5, ease: "power3.out" }, 3.1);
+
+    // Center Asteroid Sphere Zooms in
+    tl.from(".dash-anim-zoom", { scale: 0.7, opacity: 0, duration: 0.8, ease: "back.out(1.2)" }, 3.2);
+
+    // Left Column elements stagger slide up
+    tl.from(".dash-anim-stagger-1", { y: 40, opacity: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }, 3.2);
+    
+    // Left Column Cards (nested stagger)
+    tl.from(".m-card-anim", { y: 30, opacity: 0, duration: 0.5, stagger: 0.1, ease: "back.out(1.1)" }, 3.3);
+
+    // Right Column elements stagger slide left
+    tl.from(".dash-anim-stagger-2", { x: 40, opacity: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }, 3.3);
+
+    // Right Top Grid cards
+    tl.from(".rt-anim", { scale: 0.9, opacity: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }, 3.4);
+
+    // Stacked Folders slide in sequentially
+    tl.from(".stack-anim", { y: 60, opacity: 0, duration: 0.6, stagger: 0.15, ease: "back.out(1.2)" }, 3.5);
+
+    // ==========================================
+    // PAIN POINTS SECTION LOGIC
+    // ==========================================
+    const ppCards = gsap.utils.toArray('.pp-card');
+    
+    // Manual text split for mindblowing animation
+    const ppTitle = document.querySelector('.pp-title');
+    if (ppTitle) {
+      const text = ppTitle.innerText;
+      ppTitle.innerHTML = '';
+      text.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.innerText = char === ' ' ? '\u00A0' : char;
+        ppTitle.appendChild(span);
+      });
+    }
+
+    const ppTL = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".pain-points-section",
+        start: "top top",
+        end: "+=2000",
+        scrub: 1,
+        pin: true
+      }
+    });
+
+    // Mindblowing 3D Text Animation
+    ppTL.from(".pp-title span", {
+      z: 200,
+      scale: 0,
+      opacity: 0,
+      rotateX: 90,
+      stagger: 0.05,
+      ease: "back.out(1.5)",
+      duration: 1
+    }, 0);
+
+    ppTL.from(".pp-subtitle", {
+      y: 20, opacity: 0, duration: 1, ease: "power2.out"
+    }, 0.5);
+
+    // Cards mindblowing slide-in from 4 corners
+    ppTL.from(ppCards[0], { x: -300, y: -300, rotationZ: -15, rotationY: -30, scale: 0.5, opacity: 0, duration: 1.5, ease: "power3.out" }, 1.0);
+    ppTL.from(ppCards[1], { x: 300, y: -300, rotationZ: 15, rotationY: 30, scale: 0.5, opacity: 0, duration: 1.5, ease: "power3.out" }, 1.2);
+    ppTL.from(ppCards[2], { x: -300, y: 300, rotationZ: -15, rotationY: -30, scale: 0.5, opacity: 0, duration: 1.5, ease: "power3.out" }, 1.4);
+    ppTL.from(ppCards[3], { x: 300, y: 300, rotationZ: 15, rotationY: 30, scale: 0.5, opacity: 0, duration: 1.5, ease: "power3.out" }, 1.6);
+
+    // ==========================================
+    // METER SECTION LOGIC
+    // ==========================================
+    const sideCardData = [
+      // Conservative
+      [
+        { title: "Low Volatility", desc: "Prioritizes stable assets to minimize major market fluctuations." },
+        { title: "Steady Yield", desc: "Focuses on consistent, predictable returns over longer horizons." },
+        { title: "Risk Mitigation", desc: "Heavy defensive positions to protect capital during downturns." },
+        { title: "Asset Protection", desc: "Maintains high liquidity to ensure funds are accessible." }
+      ],
+      // Balanced
+      [
+        { title: "Smart Diversification", desc: "Spreads investments across varied sectors to optimize growth." },
+        { title: "Moderate Growth", desc: "Targets healthy capital appreciation while managing downside." },
+        { title: "Adaptive Strategy", desc: "Rebalances dynamically based on emerging market trends." },
+        { title: "Balanced Yield", desc: "Mixes dividend-generating assets with growth opportunities." }
+      ],
+      // Dynamic
+      [
+        { title: "High Momentum", desc: "Capitalizes on rapid price movements in volatile markets." },
+        { title: "Maximum Upside", desc: "Aggressive positioning in high-growth, high-risk sectors." },
+        { title: "Algorithmic Speed", desc: "Executes trades instantly to exploit micro-inefficiencies." },
+        { title: "Leveraged Potential", desc: "Utilizes advanced instruments for amplified market exposure." }
+      ]
+    ];
+
+    const meterStates = [
+      { 
+        name: "Conservative", 
+        color: "#2dd4bf",
+        title: "Capital Preservation.",
+        desc: "Prioritize stability and capital preservation. Our conservative algorithms minimize exposure to market volatility, ensuring steady, predictable growth."
+      },
+      { 
+        name: "Balanced", 
+        color: "#f97316",
+        title: "Optimized Equilibrium.",
+        desc: "The perfect equilibrium of risk and reward. Optimize your portfolio with smart diversification that captures upside while protecting against severe downturns."
+      },
+      { 
+        name: "Dynamic", 
+        color: "#a855f7",
+        title: "Aggressive Growth.",
+        desc: "Maximize your potential returns. Leverage aggressive, high-frequency trading strategies that capitalize on rapid market movements for exponential growth."
+      }
+    ];
+    
+    let currentMeterState = -1;
+
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : "255,255,255";
+    }
+
+    function updateMeter(stateIndex) {
+      if(stateIndex === currentMeterState) return;
+      const isInitial = currentMeterState === -1;
+      currentMeterState = stateIndex;
+      
+      const state = meterStates[stateIndex];
+      
+      const tick = document.getElementById('needle-tick');
+      if(tick) {
+        tick.style.background = state.color;
+        tick.style.boxShadow = `0 0 15px ${state.color}, 0 0 30px ${state.color}`;
+      }
+      
+      const box = document.getElementById('active-status-box');
+      if(box) {
+        box.innerText = state.name;
+        box.style.color = state.color;
+        box.style.borderColor = state.color;
+        box.style.background = `rgba(${hexToRgb(state.color)}, 0.05)`;
+        box.style.boxShadow = `inset 0 0 15px rgba(${hexToRgb(state.color)}, 0.2), 0 0 15px rgba(${hexToRgb(state.color)}, 0.2)`;
+      }
+
+      const titleEl = document.getElementById('meter-title-text');
+      const descEl = document.getElementById('meter-desc-text');
+      const sideCards = [
+         document.getElementById('sc-0'),
+         document.getElementById('sc-1'),
+         document.getElementById('sc-2'),
+         document.getElementById('sc-3')
+      ];
+      const cardData = sideCardData[stateIndex];
+
+      const applySideCardData = () => {
+         for(let i=0; i<4; i++) {
+            if(!sideCards[i]) continue;
+            sideCards[i].style.borderColor = state.color;
+            sideCards[i].style.boxShadow = `0 0 20px rgba(${hexToRgb(state.color)}, 0.15)`;
+            const titleNode = document.getElementById(`sc-title-${i}`);
+            if (titleNode) {
+               titleNode.innerText = cardData[i].title;
+               titleNode.style.color = state.color;
+            }
+            const descNode = document.getElementById(`sc-desc-${i}`);
+            if (descNode) {
+               descNode.innerText = cardData[i].desc;
+            }
+         }
+      };
+      
+      if (titleEl && descEl) {
+         if (isInitial) {
+            titleEl.innerText = state.title;
+            descEl.innerText = state.desc;
+            applySideCardData();
+         } else {
+            gsap.killTweensOf([titleEl, descEl, ...sideCards]);
+            
+            // Slide out side cards
+            gsap.to([sideCards[0], sideCards[1]], { x: -30, opacity: 0, duration: 0.15, stagger: 0.05 });
+            gsap.to([sideCards[2], sideCards[3]], { x: 30, opacity: 0, duration: 0.15, stagger: 0.05 });
+
+            gsap.to([titleEl, descEl], {
+               opacity: 0, y: 10, duration: 0.15, stagger: 0.05,
+               onComplete: () => {
+                  titleEl.innerText = state.title;
+                  descEl.innerText = state.desc;
+                  applySideCardData();
+
+                  gsap.to([titleEl, descEl], { opacity: 1, y: 0, duration: 0.15, stagger: 0.05 });
+                  gsap.to([sideCards[0], sideCards[1]], { x: 0, opacity: 1, duration: 0.2, stagger: 0.05, ease: "power2.out" });
+                  gsap.to([sideCards[2], sideCards[3]], { x: 0, opacity: 1, duration: 0.2, stagger: 0.05, ease: "power2.out" });
+               }
+            });
+         }
+      }
+
+      for(let i=0; i<3; i++) {
+         const seg = document.getElementById(`dial-seg-${i}`);
+         const icon = document.getElementById(`icon-${i}`);
+         if(!seg || !icon) continue;
+         
+         if(i === stateIndex) {
+            seg.style.stroke = state.color;
+            const filterId = stateIndex === 0 ? 'glow-teal' : stateIndex === 1 ? 'glow-orange' : 'glow-purple';
+            seg.style.filter = `url(#${filterId})`;
+            icon.style.color = state.color;
+         } else {
+            seg.style.stroke = "rgba(255,255,255,0.05)";
+            seg.style.filter = "none";
+            icon.style.color = "rgba(255,255,255,0.4)";
+         }
+      }
+    }
+
+    updateMeter(0); // init
+
+    const meterTL = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".meter-section",
+        start: "top top",
+        end: "+=3000",
+        scrub: 1,
+        pin: true,
+        onUpdate: (self) => {
+          const p = self.progress;
+          if(p < 0.3) updateMeter(0);
+          else if(p < 0.7) updateMeter(1);
+          else updateMeter(2);
+        }
+      }
+    });
+
+    meterTL.fromTo("#dial-needle", 
+      { rotation: -70 }, 
+      { rotation: 70, ease: "none" }
+    );
+
+    // ==========================================
+    // ORBITAL TIMELINE LOGIC
+    // ==========================================
+    const timelineData = [
+      { id: 1, title: "Planning", date: "Jan 2024", content: "Project planning and requirements gathering phase.", status: "completed", energy: 100, relatedIds: [2], icon: "📅",
+        sideCards: [
+          { title: "Market Analysis", desc: "Evaluating current market trends and competitor strategies." },
+          { title: "Resource Allocation", desc: "Defining budget constraints and team composition." },
+          { title: "Risk Assessment", desc: "Identifying potential bottlenecks before they happen." },
+          { title: "Goal Setting", desc: "Establishing clear KPIs and launch milestones." }
+        ]
+      },
+      { id: 2, title: "Design", date: "Feb 2024", content: "UI/UX design and system architecture.", status: "completed", energy: 90, relatedIds: [1, 3], icon: "📄",
+        sideCards: [
+          { title: "Wireframing", desc: "Creating low-fidelity blueprints for application flow." },
+          { title: "User Testing", desc: "Validating navigation with targeted focus groups." },
+          { title: "Design System", desc: "Building consistent UI components and typography." },
+          { title: "Prototyping", desc: "Interactive mockups to demonstrate key user journeys." }
+        ]
+      },
+      { id: 3, title: "Development", date: "Mar 2024", content: "Core features implementation and testing.", status: "in-progress", energy: 60, relatedIds: [2, 4], icon: "💻",
+        sideCards: [
+          { title: "Backend Architecture", desc: "Setting up scalable databases and server infrastructure." },
+          { title: "Frontend Integration", desc: "Connecting UI components to real-time APIs." },
+          { title: "Security Audits", desc: "Implementing robust encryption and auth protocols." },
+          { title: "Performance Tuning", desc: "Optimizing load times and minimizing rendering delays." }
+        ]
+      },
+      { id: 4, title: "Testing", date: "Apr 2024", content: "User testing and bug fixes.", status: "pending", energy: 30, relatedIds: [3, 5], icon: "👤",
+        sideCards: [
+          { title: "QA Automation", desc: "Writing scripts for continuous integration testing." },
+          { title: "Stress Testing", desc: "Simulating heavy traffic to ensure system stability." },
+          { title: "Bug Triage", desc: "Categorizing and fixing critical issues rapidly." },
+          { title: "UAT", desc: "User Acceptance Testing with closed beta clients." }
+        ]
+      },
+      { id: 5, title: "Release", date: "May 2024", content: "Final deployment and release.", status: "pending", energy: 10, relatedIds: [4], icon: "⏱",
+        sideCards: [
+          { title: "Deployment", desc: "Pushing final production builds to global CDN." },
+          { title: "Marketing Push", desc: "Coordinating launch announcements and PR." },
+          { title: "Monitoring", desc: "Watching real-time analytics for post-launch issues." },
+          { title: "Post-Mortem", desc: "Reviewing project successes and areas for improvement." }
+        ]
+      }
+    ];
+
+    gsap.set(['#osc-0', '#osc-1', '#osc-2', '#osc-3'], { opacity: 0, scale: 0.9 });
+
+    const updateOrbitalSideCards = (nodeId) => {
+       const sideCards = ['#osc-0', '#osc-1', '#osc-2', '#osc-3'];
+       if (!nodeId) {
+          gsap.to(sideCards, { opacity: 0, scale: 0.9, x: 0, duration: 0.3, ease: "power2.in" });
+          return;
+       }
+
+       const nodeData = timelineData.find(n => n.id === nodeId);
+       if (!nodeData || !nodeData.sideCards) return;
+       
+       gsap.to(sideCards, {
+          opacity: 0, x: (i) => i < 2 ? -20 : 20, duration: 0.15, stagger: 0.05,
+          onComplete: () => {
+             for(let i=0; i<4; i++) {
+                const el = document.getElementById(`osc-${i}`);
+                if(!el) continue;
+                // Revert to default subtle styling without theme color changes
+                el.style.borderColor = "rgba(255,255,255,0.05)";
+                el.style.boxShadow = "none";
+                document.getElementById(`osc-title-${i}`).innerText = nodeData.sideCards[i].title;
+                document.getElementById(`osc-title-${i}`).style.color = "#fff";
+                document.getElementById(`osc-desc-${i}`).innerText = nodeData.sideCards[i].desc;
+             }
+             gsap.to(['#osc-0', '#osc-1'], { opacity: 1, scale: 1, x: 0, duration: 0.3, stagger: 0.05, ease: "power2.out" });
+             gsap.to(['#osc-2', '#osc-3'], { opacity: 1, scale: 1, x: 0, duration: 0.3, stagger: 0.05, ease: "power2.out" });
+          }
+       });
+    };
+
+    let rotationAngle = 0;
+    let autoRotate = true;
+    let activeNodeId = null;
+    const nodesEl = document.getElementById('nodes-container');
+
+    function renderNodes() {
+      nodesEl.innerHTML = '';
+      timelineData.forEach((item, index) => {
+         const el = document.createElement('div');
+         el.className = 'orbit-node-wrapper';
+         el.id = `node-${item.id}`;
+         
+         const isExpanded = activeNodeId === item.id;
+         const isRelated = activeNodeId && timelineData.find(i => i.id === activeNodeId).relatedIds.includes(item.id) && !isExpanded;
+
+         if (isExpanded) el.classList.add('expanded');
+         
+         const total = timelineData.length;
+         const angle = ((index / total) * 360 + rotationAngle) % 360;
+         const radian = (angle * Math.PI) / 180;
+         const radius = 200;
+         const x = radius * Math.cos(radian);
+         const y = radius * Math.sin(radian);
+         const zIndex = Math.round(100 + 50 * Math.cos(radian));
+         const opacity = isExpanded ? 1 : Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2)));
+
+         el.style.transform = `translate(${x}px, ${y}px)`;
+         el.style.zIndex = isExpanded ? 200 : zIndex;
+         el.style.opacity = opacity;
+
+         let statusText = item.status === 'completed' ? 'COMPLETE' : item.status === 'in-progress' ? 'IN PROGRESS' : 'PENDING';
+
+         let relatedHtml = '';
+         if (item.relatedIds.length > 0) {
+            const tagsHtml = item.relatedIds.map(rid => {
+              const rItem = timelineData.find(i => i.id === rid);
+              return `<button class="ncr-tag" onclick="event.stopPropagation(); window.setActiveNode(${rid})">${rItem.title} <span>→</span></button>`;
+            }).join('');
+            relatedHtml = `
+              <div class="nc-related">
+                <div class="ncr-title">🔗 Connected Nodes</div>
+                <div class="ncr-tags">${tagsHtml}</div>
+              </div>
+            `;
+         }
+
+         el.innerHTML = `
+           <div class="node-energy-pulse ${isRelated ? 'pulsing' : ''}" style="width: ${item.energy * 0.5 + 40}px; height: ${item.energy * 0.5 + 40}px;"></div>
+           <div class="node-icon-bg ${isExpanded ? 'expanded' : ''} ${isRelated ? 'related' : ''}">${item.icon}</div>
+           <div class="node-title">${item.title}</div>
+           <div class="node-card">
+             <div class="nc-header">
+               <span class="nc-badge ${item.status}">${statusText}</span>
+               <span class="nc-date">${item.date}</span>
+             </div>
+             <div class="nc-title">${item.title}</div>
+             <div class="nc-desc">${item.content}</div>
+             <div class="nc-energy">
+               <div class="nce-top"><span>⚡ Energy Level</span> <span style="font-family:monospace">${item.energy}%</span></div>
+               <div class="nce-bar"><div class="nce-fill" style="width: ${item.energy}%"></div></div>
+             </div>
+             ${relatedHtml}
+           </div>
+         `;
+
+         el.onclick = (e) => {
+           e.stopPropagation();
+           if (activeNodeId === item.id) {
+              window.setActiveNode(null);
+           } else {
+              window.setActiveNode(item.id);
+           }
+         };
+
+         nodesEl.appendChild(el);
+      });
+    }
+
+    window.setActiveNode = function(id) {
+      activeNodeId = id;
+      if (id !== null) {
+        autoRotate = false;
+        const index = timelineData.findIndex(i => i.id === id);
+        const targetAngle = (index / timelineData.length) * 360;
+        rotationAngle = 270 - targetAngle; 
+      } else {
+        autoRotate = true;
+      }
+      updatePositions();
+      updateOrbitalSideCards(id);
+    };
+
+    function updatePositions() {
+      const total = timelineData.length;
+      timelineData.forEach((item, index) => {
+         const el = document.getElementById(`node-${item.id}`);
+         if(!el) return;
+         const isExpanded = activeNodeId === item.id;
+         const isRelated = activeNodeId && timelineData.find(i => i.id === activeNodeId).relatedIds.includes(item.id) && !isExpanded;
+
+         if (isExpanded) { el.classList.add('expanded'); } else { el.classList.remove('expanded'); }
+         
+         const iconBg = el.querySelector('.node-icon-bg');
+         if (isExpanded) iconBg.classList.add('expanded'); else iconBg.classList.remove('expanded');
+         if (isRelated) iconBg.classList.add('related'); else iconBg.classList.remove('related');
+
+         const pulse = el.querySelector('.node-energy-pulse');
+         if (isRelated) pulse.classList.add('pulsing'); else pulse.classList.remove('pulsing');
+
+         const angle = ((index / total) * 360 + rotationAngle) % 360;
+         const radian = (angle * Math.PI) / 180;
+         const radius = 200;
+         const x = radius * Math.cos(radian);
+         const y = radius * Math.sin(radian);
+         const zIndex = Math.round(100 + 50 * Math.cos(radian));
+         const opacity = isExpanded ? 1 : Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2)));
+
+         el.style.transform = `translate(${x}px, ${y}px)`;
+         el.style.zIndex = isExpanded ? 200 : zIndex;
+         el.style.opacity = opacity;
+      });
+    }
+
+    setInterval(() => {
+      if (autoRotate) {
+        rotationAngle = (rotationAngle + 0.5) % 360;
+        updatePositions();
+      }
+    }, 50);
+
+    document.getElementById('orbital-container').addEventListener('click', (e) => {
+       if(e.target.id === 'orbital-container' || e.target.classList.contains('orbit-ring')) {
+          window.setActiveNode(null);
+       }
+    });
+
+    renderNodes();
+
+  </script>
+</body>
+</html>
